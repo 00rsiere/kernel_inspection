@@ -98,6 +98,7 @@ void print_usage_and_exit(char **argv)
   exit(1);
 }
 
+#ifndef SHARED_LIB_MODE
 int main(int argc, char **argv)
 {
   int opt;
@@ -149,3 +150,4 @@ int main(int argc, char **argv)
 
   return 0;
 }
+#endif

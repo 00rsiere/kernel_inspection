@@ -141,21 +141,24 @@ int open_callback (struct inode *node, struct file *fd)
 
 static dev_t create_device(void)
 { 
-  if (alloc_chrdev_region(&major, 0, 1, "tracer_dev") < 0)  //$cat /proc/devices
+  if (alloc_chrdev_region(&major, 0, 1, "tracer_dev") < 0)
   { 
     return 0;
   }
-  if ((cl = class_create(THIS_MODULE, "chardrv")) == NULL)    //$ls /sys/class
+
+  if ((cl = class_create(THIS_MODULE, "chardrv")) == NULL)
   { 
     unregister_chrdev_region(major, 1);
     return 0;
   }
-  if (device_create(cl, NULL, major, NULL, "tracer") == NULL) //$ls /dev/
+
+  if (device_create(cl, NULL, major, NULL, "tracer") == NULL)
   { 
     class_destroy(cl);
     unregister_chrdev_region(major, 1);
     return 0;
   }
+
   cdev_init(&c_dev, &fops);
   if (cdev_add(&c_dev, major, 1) == -1) {
     return 0;
