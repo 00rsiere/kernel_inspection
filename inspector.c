@@ -6,23 +6,17 @@
 #include <linux/string.h>
 #include <linux/highmem.h>
 #include <asm/pgtable.h>
+#include <asm/msr.h>
 
-#define MAX_COPY_LEN 0x1000
+#include "inspector.h"
 
-long ioctl_callback(struct file *flip, unsigned int ioctl, unsigned long arg);
+static long ioctl_callback(struct file *flip, unsigned int ioctl, unsigned long arg);
 int open_callback (struct inode *node, struct file *fd);
 
 static const struct file_operations fops = {
   .owner = THIS_MODULE,
   .open = open_callback,
   .unlocked_ioctl = ioctl_callback,
-};
-
-struct ioctl_arg {
-  unsigned long long addr;
-  unsigned long long len;
-  char *out_buf;
-  size_t out_len;
 };
 
 static dev_t major;
@@ -44,11 +38,40 @@ int read_kernel_memory(void *addr, unsigned long long len, char *buffer, size_t 
   return 0;
 }
 
-long ioctl_callback(struct file *flip, unsigned int ioctl, unsigned long arg)
+unsigned long long ioctl_inspect_msr(struct ioctl_inspect_mem_arg * __user arg)
+{
+  unsigned long long val = 0;
+  int remaining = 0;
+  int ret = 0;
+  struct ioctl_inspect_mem_arg *argp = NULL;
+
+  argp = memdup_user(arg, sizeof(struct ioctl_inspect_mem_arg));
+  if (!argp) {
+    ret = -EINVAL;
+    goto finish;
+  }
+
+  val = native_read_msr(argp->val);
+  remaining = copy_to_user(&arg->out_ull, &val, sizeof(val));
+
+  if (remaining) {
+    ret = -EINVAL;
+    goto finish;
+  }
+
+finish:
+  if (argp) {
+    kfree(argp);
+  }
+ 
+  return 0;
+}
+
+int ioctl_inspect_memory(struct ioctl_inspect_mem_arg * __user arg)
 {
   int ret = 0;
   char *kernel_buffer = NULL;
-  struct ioctl_arg __user *argp = NULL;
+  struct ioctl_inspect_mem_arg *argp = NULL;
   unsigned long long addr = 0;
   unsigned long long len = 0;
   char *out_buf = NULL;
@@ -59,7 +82,7 @@ long ioctl_callback(struct file *flip, unsigned int ioctl, unsigned long arg)
     goto finish;
   }
 
-  argp = memdup_user((struct ioctl_arg *)arg, sizeof(struct ioctl_arg));
+  argp = memdup_user(arg, sizeof(struct ioctl_inspect_mem_arg));
   if (!argp) {
     ret = -EINVAL;
     goto finish;
@@ -91,6 +114,23 @@ finish:
   if (argp) {
     kfree(argp);
   }
+  return ret;
+}
+
+static long ioctl_callback(struct file *flip, unsigned int ioctl, unsigned long arg)
+{
+  int ret = 0;
+  switch (ioctl) {
+    case INSPECT_MEMORY_IOCTL:
+      ret = ioctl_inspect_memory((struct ioctl_inspect_mem_arg *)arg);
+      break;
+    case INSPECT_MSR_IOCTL:
+      ret = ioctl_inspect_msr((struct ioctl_inspect_mem_arg *)arg);
+      break;
+    default:
+      ret = -EINVAL;
+  }
+
   return ret;
 }
 
