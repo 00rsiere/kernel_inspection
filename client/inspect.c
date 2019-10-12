@@ -108,6 +108,10 @@ int main(int argc, char **argv)
 
   enum inspection_type mode = INVALID_TYPE;
 
+  if (geteuid()) {
+    printf("WARNING: inspection requires root privileges, things will probably not work.\n");
+  }
+
   while ((opt = getopt(argc, argv, "am")) != -1) {
     switch (opt) {
       case 'a':
@@ -136,12 +140,12 @@ int main(int argc, char **argv)
   switch (mode) {
     case INSPECT_MEMORY:
       if(inspect_memory(addr, len)) {
-        print_usage_and_exit(argv);
+        printf("inspect_memory failed\n");
       }
       break;
     case INSPECT_MSR:
       if (inspect_msr(msr)) {
-        print_usage_and_exit(argv);
+        printf("inspect_msr failed\n");
       }
       break;
     default:

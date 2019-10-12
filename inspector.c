@@ -26,16 +26,58 @@ static struct cdev c_dev;
 int read_kernel_memory(void *addr, unsigned long long len, char *buffer, size_t buf_len)
 {
   size_t copy_len = 0;
+  struct page *p = NULL;
+  char *kaddr = NULL;
+  int err = 0;
+  unsigned long pfn = 0;
+
   if (len > buf_len) {
     copy_len = buf_len;
   } else {
     copy_len = len;
   }
 
-  // TODO: check mapped address
-  memcpy(buffer, addr, len);
+  p = virt_to_page(addr);
 
-  return 0;
+  if (!p) {
+    err = -EINVAL;
+    goto finish;
+  }
+
+  pfn = page_to_pfn(p);
+  if (!pfn) {
+    err = -EINVAL;
+    goto finish;
+  }
+
+  if (!pfn_valid(pfn)) {
+    err = -EINVAL;
+    goto finish;
+  }
+
+  p = pfn_to_page(pfn);
+
+  if (!p) {
+    err = -EINVAL;
+    goto finish;
+  }
+
+  kaddr = kmap_atomic(p);
+
+  if (!kaddr) {
+    err = -EINVAL;
+    goto finish;
+  }
+
+  memcpy(buffer, kaddr, len);
+
+finish:
+
+  if (kaddr) {
+    kunmap_atomic(kaddr);
+  }
+
+  return err;
 }
 
 unsigned long long ioctl_inspect_msr(struct ioctl_inspect_mem_arg * __user arg)
