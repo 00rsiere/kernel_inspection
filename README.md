@@ -9,7 +9,7 @@ sudo insmod driver/inspector.ko
 #### Usage
 
 sudo ./client/inspect_client -m [ msr_number ]\
-sudo ./client/inspect_client -a [ kernel_address ] length
+sudo ./client/inspect_client -a [ kernel_address ] [ length ]
 
 #### Example
 
