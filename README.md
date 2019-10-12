@@ -13,6 +13,6 @@ sudo ./client/inspect_client -a [ kernel_address ] [ length ]
 
 #### Example
 
-grab address of syscall entry (x86-64) (MSR_LSTAR) and disassemble 100 bytes\
+grab address of syscall entry (x86-64) (MSR_LSTAR) and disassemble 100 bytes
 
 entry_syscall_addr=$(sudo ./client/inspect_client -m 0xc0000082) && sudo ./client/inspect_client -a $entry_syscall_addr 100
