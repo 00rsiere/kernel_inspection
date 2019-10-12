@@ -1,5 +1,5 @@
-#ifndef INSPECTOR_HEADER
-#define INSPECTOR_HEADER
+#ifndef INSPECTION_HEADER
+#define INSPECTION_HEADER
 
 #define MAX_COPY_LEN 0x1000
 
@@ -24,9 +24,10 @@ struct ioctl_inspect_mem_arg {
   size_t out_len;
 };
 
-#define INSPECTOR_MAGIC 'i'
+#define INSPECTION_MAGIC 'i'
 
-#define INSPECT_MSR_IOCTL _IOWR(INSPECTOR_MAGIC, 0x1, struct ioctl_inspect_mem_arg)
-#define INSPECT_MEMORY_IOCTL _IOWR(INSPECTOR_MAGIC, 0x2, struct ioctl_inspect_mem_arg)
+#define INSPECT_MSR_IOCTL _IOWR(INSPECTION_MAGIC, 0x1, struct ioctl_inspect_mem_arg)
+#define INSPECT_MEMORY_IOCTL _IOWR(INSPECTION_MAGIC, 0x2, struct ioctl_inspect_mem_arg)
 
 #endif
+

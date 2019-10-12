@@ -1,16 +1,14 @@
-BINNAME=inspect
-LIBNAME=libinspect.so
+BINNAME=inspect_client
+LIBNAME=inspect
 CC=gcc
-CFLAGS+=-O3
-SHARED_CFLAGS=--shared -DSHARED_LIB_MODE
 REQUIRED_LIBS=capstone
+LIB_DIR=$(PWD)/../lib/
+INCLUDE_DIR=$(PWD)/../include
+CFLAGS+=-O3 -Wl,-rpath=$(PWD)/../lib/
 
 
 build:
-	$(CC) $(CFLAGS) inspect.c -o $(BINNAME) -l $(REQUIRED_LIBS)
-
-shared:
-	$(CC) $(CFLAGS) $(SHARED_CFLAGS) inspect.c -o $(LIBNAME) -l $(REQUIRED_LIBS)
+	$(CC) $(CFLAGS) -I $(INCLUDE_DIR) *.c -o $(BINNAME) -l $(REQUIRED_LIBS) -l $(LIBNAME) -L $(LIB_DIR)
 
 clean:
-	rm -f *.o && rm -f $(BINNAME) rm -f $(LIBNAME)
+	rm -f *.o && rm -f $(BINNAME)

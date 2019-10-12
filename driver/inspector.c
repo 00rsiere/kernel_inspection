@@ -8,7 +8,7 @@
 #include <asm/pgtable.h>
 #include <asm/msr.h>
 
-#include "inspector.h"
+#include "inspection.h"
 
 static long ioctl_callback(struct file *flip, unsigned int ioctl, unsigned long arg);
 int open_callback (struct inode *node, struct file *fd);

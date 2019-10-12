@@ -1,12 +1,26 @@
-obj-m += inspector.o
 CLIENT_PATH=client
+DRIVER_PATH=driver
+LIB_PATH=lib
 
-build: inspector_client
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+all: inspector_driver inspector_lib inspector_client
+	cd $(CLIENT_PATH) && make build
 
-clean:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
-	cd $(CLIENT_PATH) && make clean
+clean: inspector_driver_clean inspector_lib_clean inspector_client_clean
 
 inspector_client:
 	cd $(CLIENT_PATH) && make build
+
+inspector_client_clean:
+	cd $(CLIENT_PATH) && make clean
+
+inspector_driver:
+	cd $(DRIVER_PATH) && make build
+
+inspector_driver_clean:
+	cd $(DRIVER_PATH) && make clean
+
+inspector_lib:
+	cd $(LIB_PATH) && make shared
+
+inspector_lib_clean:
+	cd $(LIB_PATH) && make clean
