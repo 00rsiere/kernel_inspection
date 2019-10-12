@@ -77,11 +77,6 @@ int ioctl_inspect_memory(struct ioctl_inspect_mem_arg * __user arg)
   char *out_buf = NULL;
   size_t out_len = 0;
 
-  if (out_len > MAX_COPY_LEN) {
-    ret = -EINVAL;
-    goto finish;
-  }
-
   argp = memdup_user(arg, sizeof(struct ioctl_inspect_mem_arg));
   if (!argp) {
     ret = -EINVAL;
@@ -92,6 +87,11 @@ int ioctl_inspect_memory(struct ioctl_inspect_mem_arg * __user arg)
   len = argp->len;
   out_buf = argp->out_buf;
   out_len = argp->out_len;
+
+  if (out_len > MAX_COPY_LEN) {
+    ret = -EINVAL;
+    goto finish;
+  }
 
   kernel_buffer = kmalloc(out_len, GFP_KERNEL);
   if (!kernel_buffer) {
@@ -106,6 +106,11 @@ int ioctl_inspect_memory(struct ioctl_inspect_mem_arg * __user arg)
 
   ret = copy_to_user(out_buf, kernel_buffer, out_len);
 
+  if (ret) {
+    ret = -EINVAL;
+    goto finish;
+  }
+
 finish:
   if (kernel_buffer) {
     kfree(kernel_buffer);
@@ -114,6 +119,7 @@ finish:
   if (argp) {
     kfree(argp);
   }
+
   return ret;
 }
 

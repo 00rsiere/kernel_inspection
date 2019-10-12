@@ -1,9 +1,12 @@
 obj-m += inspector.o
+CLIENT_PATH=client
 
-all:
+build: inspector_client
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
-	cd client && gcc inspect.c -o inspect -lcapstone
 
 clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
-	cd client && rm -f *.o && rm -f inspect
+	cd $(CLIENT_PATH) && make clean
+
+inspector_client:
+	cd $(CLIENT_PATH) && make build
